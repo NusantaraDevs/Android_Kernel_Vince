@@ -988,7 +988,7 @@ static ssize_t snapshot_crashdumper_store(struct kgsl_device *device,
 	int ret;
 
 	if (device && count > 0)
-		device->snapshot_crashdumper = 1;
+		device->snapshot_crashdumper = 0;
 
 	ret = kgsl_sysfs_store(buf, &val);
 
