@@ -284,10 +284,9 @@ static int cpuid_callback(struct notifier_block *nb,
 
 	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_ONLINE:
-	case CPU_DOWN_FAILED:
 		rc = cpuid_add_regs(cpu);
 		break;
-	case CPU_DOWN_PREPARE:
+	case CPU_DEAD:
 		rc = cpuid_remove_regs(cpu);
 		break;
 	}
