@@ -8183,12 +8183,17 @@ out:
 }
 EXPORT_SYMBOL_GPL(dev_change_net_namespace);
 
-static int dev_cpu_dead(unsigned int oldcpu)
+static int dev_cpu_callback(struct notifier_block *nfb,
+			    unsigned long action,
+			    void *ocpu)
 {
 	struct sk_buff **list_skb;
 	struct sk_buff *skb;
-	unsigned int cpu;
+	unsigned int cpu, oldcpu = (unsigned long)ocpu;
 	struct softnet_data *sd, *oldsd, *remsd;
+
+	if (action != CPU_DEAD && action != CPU_DEAD_FROZEN)
+		return NOTIFY_OK;
 
 	local_irq_disable();
 	cpu = smp_processor_id();
@@ -8246,7 +8251,7 @@ static int dev_cpu_dead(unsigned int oldcpu)
 		input_queue_head_incr(oldsd);
 	}
 
-	return 0;
+	return NOTIFY_OK;
 }
 
 
@@ -8583,9 +8588,7 @@ static int __init net_dev_init(void)
 	open_softirq(NET_TX_SOFTIRQ, net_tx_action);
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action);
 
-	rc = cpuhp_setup_state_nocalls(CPUHP_NET_DEV_DEAD, "net/dev:dead",
-				       NULL, dev_cpu_dead);
-	WARN_ON(rc < 0);
+	hotcpu_notifier(dev_cpu_callback, 0);
 	dst_subsys_init();
 	rc = 0;
 out:
